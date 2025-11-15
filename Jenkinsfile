@@ -34,7 +34,7 @@ pipeline {
 
     stage('Deploy to Minikube') {
       steps {
-        sh "kubectl set image deployment/flask-cicd-k8s flask-cicd-k8s=${DOCKER_IMAGE}:${COMMIT}"
+        sh "kubectl set image deployment/flask-cicd-k8s flask-container=${DOCKER_IMAGE}:${COMMIT}"
         sh "kubectl rollout status deployment/flask-cicd-k8s"
       }
     }
