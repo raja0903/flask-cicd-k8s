@@ -27,14 +27,22 @@ pipeline {
         }
       }
     }
+
+    stage('Deploy to Minikube') {
+      steps {
+        sh "kubectl apply -f k8s/"
+        sh "kubectl rollout status deployment/flask-cicd-k8s"
+      }
+    }
   }
 
   post {
     success {
-      echo "🎉 Docker Image Pushed Successfully! Next: kubectl apply -f k8s/"
+      echo "🎉 CI/CD Successful: App deployed to Minikube!"
+      echo "👉 Run: minikube service flask-service --url"
     }
     failure {
-      echo "❌ Build/Push Failed. Check Jenkins logs."
+      echo "❌ Build or Deployment Failed. Check Jenkins logs."
     }
   }
 }
