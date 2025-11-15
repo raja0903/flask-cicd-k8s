@@ -10,12 +10,15 @@ pipeline {
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/raja0903/flask-cicd-k8s.git'
+        script {
+          COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+        }
       }
     }
 
     stage('Build Docker Image') {
       steps {
-        sh "docker build -t ${DOCKER_IMAGE}:latest ."
+        sh "docker build -t ${DOCKER_IMAGE}:${COMMIT} -t ${DOCKER_IMAGE}:latest ."
       }
     }
 
@@ -23,6 +26,7 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USR', passwordVariable: 'PWD')]) {
           sh "echo $PWD | docker login -u $USR --password-stdin"
+          sh "docker push ${DOCKER_IMAGE}:${COMMIT}"
           sh "docker push ${DOCKER_IMAGE}:latest"
         }
       }
@@ -30,8 +34,7 @@ pipeline {
 
     stage('Deploy to Minikube') {
       steps {
-        sh "kubectl apply -f k8s/deployment.yml"
-        sh "kubectl apply -f k8s/service.yml"
+        sh "kubectl set image deployment/flask-cicd-k8s flask-cicd-k8s=${DOCKER_IMAGE}:${COMMIT}"
         sh "kubectl rollout status deployment/flask-cicd-k8s"
       }
     }
@@ -39,11 +42,7 @@ pipeline {
 
   post {
     success {
-      echo "🎉 CI/CD Successful: App deployed to Minikube!"
-      echo "👉 Run: minikube service flask-service --url"
-    }
-    failure {
-      echo "❌ Build or Deployment Failed. Check Jenkins logs."
+      echo "🎉 CI/CD Successful! Image tag: ${COMMIT}"
     }
   }
 }
