@@ -31,7 +31,7 @@ pipeline {
 
     stage('Deploy to Minikube') {
       steps {
-        sh "kubectl set image deployment/flask-cicd-k8s flask-cicd-k8s=${DOCKER_IMAGE}:${IMAGE_TAG}"
+        sh "kubectl set image deployment/flask-cicd-k8s flask-cicd-k8s=${DOCKER_IMAGE}:${IMAGE_TAG} --record"
         sh "kubectl rollout status deployment/flask-cicd-k8s"
       }
     }
@@ -47,6 +47,4 @@ pipeline {
     }
   }
 }
-~
-~
 
