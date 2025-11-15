@@ -11,7 +11,7 @@ pipeline {
       steps {
         git branch: 'main', url: 'https://github.com/raja0903/flask-cicd-k8s.git'
         script {
-          COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+          env.COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
         }
       }
     }
