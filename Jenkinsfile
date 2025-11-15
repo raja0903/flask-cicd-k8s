@@ -3,7 +3,6 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "amantrivedi09/flask-cicd-k8s"
-    IMAGE_TAG = "v${env.BUILD_NUMBER}"
   }
 
   stages {
@@ -16,7 +15,7 @@ pipeline {
 
     stage('Build Docker Image') {
       steps {
-        sh "docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} ."
+        sh "docker build -t ${DOCKER_IMAGE}:latest ."
       }
     }
 
@@ -24,14 +23,15 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USR', passwordVariable: 'PWD')]) {
           sh "echo $PWD | docker login -u $USR --password-stdin"
-          sh "docker push ${DOCKER_IMAGE}:${IMAGE_TAG}"
+          sh "docker push ${DOCKER_IMAGE}:latest"
         }
       }
     }
 
     stage('Deploy to Minikube') {
       steps {
-        sh "kubectl set image deployment/flask-cicd-k8s flask-cicd-k8s=${DOCKER_IMAGE}:${IMAGE_TAG} --record"
+        sh "kubectl apply -f k8s/deployment.yml"
+        sh "kubectl apply -f k8s/service.yml"
         sh "kubectl rollout status deployment/flask-cicd-k8s"
       }
     }
