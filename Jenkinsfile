@@ -30,7 +30,8 @@ pipeline {
 
     stage('Deploy to Minikube') {
       steps {
-        sh "kubectl apply -f k8s/"
+        sh "kubectl apply -f k8s/deployment.yml"
+        sh "kubectl apply -f k8s/service.yml"
         sh "kubectl rollout status deployment/flask-cicd-k8s"
       }
     }
